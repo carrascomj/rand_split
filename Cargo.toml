@@ -1,0 +1,13 @@
+[package]
+name = "rand_split"
+version = "0.1.0"
+authors = ["Jorge Carrasco Muriel <carrascomurielj@gmail.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/carrascomj/rand_split"
+description = "Functions to split a slice into random parts."
+categories = ["science"]
+readme = "README.md"
+
+[dependencies]
+rand = "0.8"
