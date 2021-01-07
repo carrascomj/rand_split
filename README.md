@@ -6,9 +6,12 @@
 
 This crate achieves the functionality of [sklearn's train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
 to generate splits of the data (in this case, a slice), generalized for an
-arbitrary number of splits (see [split_parts](./fn.split_parts.html)). It
-both provides functions that work on slices and iterator traits to work
+arbitrary number of splits. It
+both provides functions (see [split_parts](https://docs.rs/rand_split/0.2.0/rand_split/fn.split_parts.html)) that work on slices and iterator traits (see [PartsSplit](https://docs.rs/rand_split/0.2.0/rand_split/trait.PartsSplit.html))to work
 with streams of data.
+
+Check out the [examples in the repository](https://github.com/carrascomj/rand_split/tree/trunk/examples)
+for more information.
 
 ## License
 
