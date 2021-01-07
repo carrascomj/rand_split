@@ -1,6 +1,6 @@
 //! This crate achieves the functionality of [sklearn's train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
 //! to generate splits of the data (in this case, a slice), generalized for an
-//! arbitrary number of splits (see [split_parts](./fn.split_parts.html)). It 
+//! arbitrary number of splits (see [split_parts](./fn.split_parts.html)). It
 //! both provides functions that work on slices and iterator traits to work
 //! with streams of data.
 use rand::seq::index::sample;

@@ -1,7 +1,7 @@
 use rand::distributions::Distribution;
 use rand::distributions::WeightedIndex;
 
-/// An iterator type to generate train/test/validaton splits from a data stream 
+/// An iterator type to generate train/test/validaton splits from a data stream
 /// of unknown lenght.
 pub struct TTVIterator<T, I>
 where
@@ -59,7 +59,7 @@ where
     }
 }
 
-/// An iterator type to generate train/test/validaton splits from a data stream 
+/// An iterator type to generate train/test/validaton splits from a data stream
 /// of unknown lenght.
 ///
 /// It is the same as [`PartsSplit`](./trait.PartsSplit.html) but with a fixed
