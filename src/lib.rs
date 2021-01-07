@@ -17,10 +17,6 @@ pub use stream_ttv::TTVSplit;
 /// Split the elements of a container in randomized sets which contain a
 /// a part (in `splits`) of the input.
 ///
-/// # Errors
-///
-/// Return an error if the parts in `splits` do not sum up to 1.
-///
 /// # Example
 ///
 /// ```
@@ -28,30 +24,30 @@ pub use stream_ttv::TTVSplit;
 ///
 /// println!("{:#?}", split_parts(&[1,2,3,4,5,6,8,9,10], &[0.4, 0.2, 0.4]));
 /// ```
-pub fn split_parts<T>(cont: &[T], splits: &[f32]) -> Result<Vec<Vec<T>>, &'static str>
+pub fn split_parts<T>(cont: &[T], splits: &[f32]) -> Vec<Vec<T>>
 where
     T: Clone,
 {
-    if (splits.iter().sum::<f32>() - 1.).abs() > 0.001 {
-        return Err("splits must sum 1!");
-    }
     let n = cont.len();
     let shuffled = sample(&mut rand::thread_rng(), n, n).into_vec();
+
+    // weights to accumulated partition sizes (in counts)
     let splits: Vec<usize> = {
+        let n_weights = splits.len();
+        let total_weights = splits.iter().sum::<f32>();
         let mut tmp: Vec<usize> = splits
             .iter()
-            .map(|x| (x * n as f32) as usize)
+            .map(|w| (w * (n as f32) / total_weights) as usize)
             .scan(0, |state, x| {
                 *state += x;
                 Some(*state)
             })
             .collect();
         // account for rounding errors
-        tmp[splits.len() - 1] += n - tmp[tmp.len() - 1];
+        tmp[n_weights - 1] += n - tmp[tmp.len() - 1];
         tmp
     };
-    Ok([0]
-        .iter()
+    [0].iter()
         .chain(splits[0..(splits.len() - 1)].iter())
         .zip(splits.iter())
         .map(|(start, end)| {
@@ -60,7 +56,7 @@ where
                 .map(|i| cont[*i].clone())
                 .collect::<Vec<T>>()
         })
-        .collect())
+        .collect()
 }
 
 /// Generate train-test splits. Wrapper around [`split_parts`](./split_parts)
@@ -71,13 +67,13 @@ where
 ///
 /// let cont = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 /// let total_len = cont.len();
-/// let result = train_test_split(&cont, 0.8, 0.2).unwrap();
+/// let result = train_test_split(&cont, 0.8, 0.2);
 /// assert_eq!(
 ///     result.iter().map(|inner| inner.len()).sum::<usize>(),
 ///     total_len
 /// );
 /// ```
-pub fn train_test_split<T>(cont: &[T], train: f32, test: f32) -> Result<Vec<Vec<T>>, &'static str>
+pub fn train_test_split<T>(cont: &[T], train: f32, test: f32) -> Vec<Vec<T>>
 where
     T: Clone,
 {
@@ -92,18 +88,13 @@ where
 ///
 /// let cont = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 /// let total_len = cont.len();
-/// let result = ttv_split(&cont, 0.6, 0.2, 0.2).unwrap();
+/// let result = ttv_split(&cont, 0.6, 0.2, 0.2);
 /// assert_eq!(
 ///     result.iter().map(|inner| inner.len()).sum::<usize>(),
 ///     total_len
 /// );
 /// ```
-pub fn ttv_split<T>(
-    cont: &[T],
-    train: f32,
-    test: f32,
-    validation: f32,
-) -> Result<Vec<Vec<T>>, &'static str>
+pub fn ttv_split<T>(cont: &[T], train: f32, test: f32, validation: f32) -> Vec<Vec<T>>
 where
     T: Clone,
 {
@@ -119,7 +110,7 @@ mod tests {
         let splits = [0.2, 0.7, 0.1];
         let cont = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         let total_len = cont.len();
-        let result = split_parts(&cont, &splits).unwrap();
+        let result = split_parts(&cont, &splits);
         assert_eq!(
             result.iter().map(|inner| inner.len()).sum::<usize>(),
             total_len
@@ -132,7 +123,29 @@ mod tests {
         let splits = [0.2, 0.2, 0.3, 0.3];
         let cont = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
         let total_len = cont.len();
-        let result = split_parts(&cont, &splits).unwrap();
+        let result = split_parts(&cont, &splits);
+        assert_eq!(
+            result.iter().map(|inner| inner.len()).sum::<usize>(),
+            total_len
+        );
+        assert_eq!(result.len(), splits.len());
+    }
+
+    #[test]
+    fn unnormalized_weights_is_approx_correct() {
+        let splits = [2., 2., 3., 10.];
+        let cont = (0..1999).collect::<Vec<usize>>();
+        let result = split_parts(&cont, &splits);
+        assert!(result[3].len() > result[0..2].iter().map(|sp| sp.len()).sum());
+        assert!(result[1].len() < result[2].len());
+    }
+
+    #[test]
+    fn unnormalized_weights_preserve_data() {
+        let splits = [2., 2., 3., 6.];
+        let cont = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+        let total_len = cont.len();
+        let result = split_parts(&cont, &splits);
         assert_eq!(
             result.iter().map(|inner| inner.len()).sum::<usize>(),
             total_len
