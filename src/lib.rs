@@ -84,7 +84,7 @@ where
 ///     total_len
 /// );
 /// ```
-pub fn ttv_split<T>(cont: &mut [T], train: f32, test: f32, validation: f32) -> Vec<&mut[T]>
+pub fn ttv_split<T>(cont: &mut [T], train: f32, test: f32, validation: f32) -> Vec<&mut [T]>
 where
     T: Clone,
 {
