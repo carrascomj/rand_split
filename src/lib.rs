@@ -24,7 +24,7 @@ pub use stream_ttv::TTVSplit;
 ///
 /// println!("{:#?}", split_parts(&mut [1,2,3,4,5,6,8,9,10], &[0.4, 0.2, 0.4]));
 /// ```
-pub fn split_parts<T>(cont: &mut [T], splits: &[f32]) -> Vec<Vec<T>>
+pub fn split_parts<'a, T>(cont: &'a mut [T], splits: &[f32]) -> Vec<&'a mut [T]>
 where
     T: Clone,
 {
@@ -41,12 +41,10 @@ where
         .take(n_weights - 1)
     {
         let (right, l) = left.split_at_mut(sp);
-        let lss = Vec::from(right);
-        out.push(lss);
+        out.push(right);
         left = l;
     }
-    let lss = Vec::from(left);
-    out.push(lss);
+    out.push(left);
 
     out
 }
@@ -65,7 +63,7 @@ where
 ///     total_len
 /// );
 /// ```
-pub fn train_test_split<T>(cont: &mut [T], train: f32, test: f32) -> Vec<Vec<T>>
+pub fn train_test_split<T>(cont: &mut [T], train: f32, test: f32) -> Vec<&mut [T]>
 where
     T: Clone,
 {
@@ -86,7 +84,7 @@ where
 ///     total_len
 /// );
 /// ```
-pub fn ttv_split<T>(cont: &mut [T], train: f32, test: f32, validation: f32) -> Vec<Vec<T>>
+pub fn ttv_split<T>(cont: &mut [T], train: f32, test: f32, validation: f32) -> Vec<&mut[T]>
 where
     T: Clone,
 {
