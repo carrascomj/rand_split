@@ -1,6 +1,8 @@
 use rand::distributions::Distribution;
 use rand::distributions::WeightedIndex;
 
+use std::collections::VecDeque;
+
 /// An iterator type to generate train/test/validaton splits from a data stream
 /// of unknown lenght.
 pub struct TTVIterator<T, I>
@@ -8,7 +10,7 @@ where
     I: Iterator<Item = T>,
 {
     iter: I,
-    queue: [Vec<T>; 3],
+    queue: [VecDeque<T>; 3],
     dist: WeightedIndex<f32>,
     rng: rand::rngs::ThreadRng,
 }
@@ -17,7 +19,7 @@ impl<T, I: Iterator<Item = T>> TTVIterator<T, I> {
     pub(super) fn new(iter: I, splits: [f32; 3]) -> Self {
         Self {
             iter,
-            queue: [Vec::new(), Vec::new(), Vec::new()],
+            queue: [VecDeque::new(), VecDeque::new(), VecDeque::new()],
             dist: WeightedIndex::new(&splits).unwrap(),
             rng: rand::thread_rng(),
         }
@@ -34,7 +36,7 @@ where
         let mut out = [None, None, None];
         for (i, item) in out.iter_mut().enumerate() {
             if !self.queue[i].is_empty() {
-                *item = Some(self.queue[i].remove(0));
+                *item = self.queue[i].pop_front();
             }
         }
         if !out.iter().any(|m| m.is_none()) {
@@ -44,7 +46,7 @@ where
             if let Some(point) = self.iter.next() {
                 let idx = self.dist.sample(&mut self.rng);
                 if out[idx].is_some() {
-                    self.queue[idx].push(point);
+                    self.queue[idx].push_back(point);
                 } else {
                     out[idx] = Some(point);
                 }

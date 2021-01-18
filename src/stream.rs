@@ -1,13 +1,15 @@
 use rand::distributions::Distribution;
 use rand::distributions::WeightedIndex;
 
+use std::collections::VecDeque;
+
 /// An iterator type to generate splits from a data stream of unknown lenght.
 pub struct PartsIterator<T, I>
 where
     I: Iterator<Item = T>,
 {
     iter: I,
-    queue: Vec<Vec<T>>,
+    queue: Vec<VecDeque<T>>,
     dist: WeightedIndex<f32>,
     rng: rand::rngs::ThreadRng,
     n: usize,
@@ -17,7 +19,7 @@ impl<T, I: Iterator<Item = T>> PartsIterator<T, I> {
     pub(super) fn new(iter: I, splits: &[f32]) -> Self {
         let n = splits.len();
         let mut queue = Vec::with_capacity(n);
-        queue.resize_with(n, Vec::new);
+        queue.resize_with(n, VecDeque::new);
         Self {
             iter,
             queue,
@@ -40,7 +42,7 @@ where
         out.resize_with(self.n, || None::<T>);
         for (i, item) in out.iter_mut().enumerate() {
             if !self.queue[i].is_empty() {
-                *item = Some(self.queue[i].remove(0));
+                *item = self.queue[i].pop_front();
             }
         }
         if !out.iter().any(|m| m.is_none()) {
@@ -50,7 +52,7 @@ where
             if let Some(point) = self.iter.next() {
                 let idx = self.dist.sample(&mut self.rng);
                 if out[idx].is_some() {
-                    self.queue[idx].push(point);
+                    self.queue[idx].push_back(point);
                 } else {
                     out[idx] = Some(point);
                 }
