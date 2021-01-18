@@ -1,20 +1,24 @@
 # Benchmarks
+
 ```
 Split random slice n=10e7, 5 partitions
-                        time:   [47.599 ms 47.766 ms 47.971 ms]
+                        time:   [45.375 ms 45.465 ms 45.560 ms]
+                        change: [+0.1280% +0.4098% +0.6871%] (p = 0.01 < 0.05)
                         Change within noise threshold.
-Found 6 outliers among 100 measurements (6.00%)
-  1 (1.00%) high mild
-  5 (5.00%) high severe
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
 
-Benchmarking Split random iterator n=10e5, 3 partitions: Warming up for 3.0000 s
-Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.0s, enable flat sampling, or reduce sample count to 60.
-Split random iterator n=10e5, 3 partitions
-                        time:   [1.1922 ms 1.1931 ms 1.1940 ms]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) low mild
+Benchmarking Split random iterator n=10e7 (generalized), 3 partitions: Warming up for 3.0000 s
+Split random iterator n=10e7 (generalized), 3 partitions
+                        time:   [78.550 ms 78.593 ms 78.636 ms]
+Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high mild
-  3 (3.00%) high severe
+
+Benchmarking Split random iterator n=10e7, 3 partitions: Warming up for 3.0000 s
+Split random iterator n=10e7, 3 partitions
+                        time:   [54.958 ms 55.019 ms 55.080 ms]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
 ```
 
 ## Run the benchmark yourself

@@ -4,7 +4,7 @@ extern crate rand_split;
 
 use rand::prelude::*;
 use rand_split::split_parts;
-use rand_split::TTVSplit;
+use rand_split::{PartsSplit, TTVSplit};
 
 fn split_slice_big(rng: &mut ThreadRng) {
     let mut cont: Vec<usize> = (0..1000000).collect();
@@ -12,8 +12,19 @@ fn split_slice_big(rng: &mut ThreadRng) {
     let result = split_parts(&mut cont, &[1.5, 2.5, 0.2, 12.0, 4.5]);
     assert!(result[0].len() < result[3].len());
 }
+
 fn split_iterator_big(rng: &mut ThreadRng) {
-    let mut cont: Vec<usize> = (0..10000).collect();
+    let mut cont: Vec<usize> = (0..1000000).collect();
+    cont.shuffle(rng);
+    let _result = cont
+        .iter()
+        .split_parts(&[3., 8., 2.])
+        .map(|v| v.iter().filter(|n| n.is_some()).count())
+        .collect::<Vec<usize>>();
+}
+
+fn split_ttv_big(rng: &mut ThreadRng) {
+    let mut cont: Vec<usize> = (0..1000000).collect();
     cont.shuffle(rng);
     let _result = cont
         .iter()
@@ -29,12 +40,25 @@ fn split_slice_bench(c: &mut Criterion) {
     });
 }
 
-fn split_iterator_bench(c: &mut Criterion) {
+fn split_iterator_general_bench(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
-    c.bench_function("Split random iterator n=10e5, 3 partitions", |b| {
-        b.iter(|| split_iterator_big(&mut rng))
+    c.bench_function(
+        "Split random iterator n=10e7 (generalized), 3 partitions",
+        |b| b.iter(|| split_iterator_big(&mut rng)),
+    );
+}
+
+fn split_iterator_ttv_bench(c: &mut Criterion) {
+    let mut rng = rand::thread_rng();
+    c.bench_function("Split random iterator n=10e7, 3 partitions", |b| {
+        b.iter(|| split_ttv_big(&mut rng))
     });
 }
 
-criterion_group!(benches, split_slice_bench, split_iterator_bench);
+criterion_group!(
+    benches,
+    split_slice_bench,
+    split_iterator_general_bench,
+    split_iterator_ttv_bench
+);
 criterion_main!(benches);
